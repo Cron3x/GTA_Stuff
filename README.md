@@ -12,4 +12,4 @@
 
 ### Disclamer
 I am not responsible for anything you are doing with this software. 
-I only wrote it to learn Rust and the eframe framework 
+I only wrote it to learn Rust.
