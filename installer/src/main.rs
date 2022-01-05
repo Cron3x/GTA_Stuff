@@ -1,9 +1,9 @@
-use std::{process::{Command, exit}, fs::File, io::{Write, Seek, Read}, thread};
+#![windows_subsystem = "windows"]
+use std::{process::{Command, exit}, fs::File, io::{Write, BufReader}};
 use eframe::{epi, egui::{self, Vec2, Label, Button, Window}};
-use zip::{result::ZipResult, read::ZipFile, ZipArchive};
+use zip::{ZipArchive};
 
 #[derive(Default)]
-
 struct MyEguiApp {
 	cont_btn_bool: bool,
 	add_label_bool:bool,
@@ -56,7 +56,6 @@ impl epi::App for MyEguiApp {
 						Command::new("powershell ").arg("start").arg("https://www.python.org/").spawn().expect("can't open Browser");
 					}
 
-
 					if ui.button(text).clicked() {
 						self.cont_btn_bool = !self.cont_btn_bool;
 						window.show(ctx, |ui|{
@@ -66,7 +65,7 @@ impl epi::App for MyEguiApp {
 						});
 					}
 				});
-				
+
 				if text == "Working"{
 					download_content().expect("can't download rest of the program");
 					self.cont_btn_bool = !self.cont_btn_bool;
@@ -86,35 +85,31 @@ fn install_python_dep() -> std::io::Result<()>{
 	Ok(())
 }
 
-
-fn browse_zip_archive<T, F, U>(buf: &mut T, browse_func: F) -> ZipResult<Vec<U>>
-    where T: Read + Seek,
-          F: Fn(&ZipFile) -> ZipResult<U>
-{
-    let mut archive = ZipArchive::new(buf)?;
-    (0..archive.len())
-        .map(|i| archive.by_index(i).and_then(|file| browse_func(&file)))
-        .collect()
-}
-
 fn download_content() -> std::io::Result<()>{
+	//println!("- Installing PIP Packages -");
 	install_python_dep().expect("can't install python dependencies");
-
-	let mut aw = Command::new("powershell").arg("-Command").arg("(New-Object Net.WebClient).DownloadFile('https://www.dropbox.com/s/lxyp1104buf0iaj/gta_stuff.zip?dl=1', 'package.zip')").spawn()?;
-	aw.wait()?;
-	//TODO: unzip package.zip
-	let mut file = File::open("package.zip").expect("Couldn't open file");
-	let files = browse_zip_archive(&mut file, |f| {
-		Ok(format!("{}: {} -> {}", f.name(), f.size(), f.compressed_size()))
-	});
-	println!("{:?}", files);
+	//println!("- Installing Finished -");
+	//println!("- Start Download -");
+	let mut dchild = Command::new("powershell").arg("-Command").arg("(New-Object Net.WebClient).DownloadFile('https://www.dropbox.com/s/lxyp1104buf0iaj/gta_stuff.zip?dl=1', 'package.zip')").spawn()?;
+	dchild.wait()?;
+	//println!("- Download Finished");
+	//println!("- Extracting Files -");
+	let f = File::open("package.zip")?;
+    let reader = BufReader::new(f);
+	ZipArchive::extract(&mut ZipArchive::new(reader).unwrap(),"").expect("Can't extract package.zip");
+	//println!("- Extracting Finished -");
 	Ok(())
 }
 
-
+fn hide_console_window() {
+    unsafe { winapi::um::wincon::FreeConsole() };
+}
+// 
 fn main() {
+	hide_console_window();
 	let app = MyEguiApp::default();
 	let mut native_options = eframe::NativeOptions::default();
 	native_options.initial_window_size = Some(Vec2::new(444., 444.));
+	native_options.always_on_top = true;
 	eframe::run_native(Box::new(app), native_options);
 }

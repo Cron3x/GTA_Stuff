@@ -1,10 +1,7 @@
 use crate::data_base;
-//mod sniff;
 
 use std::{thread::{self, sleep}, process::{Command, Child}};
 use eframe::{run_native, epi::App, egui::{CentralPanel, ScrollArea, Vec2, CtxRef, FontDefinitions, FontFamily, Label, Button, self, SelectableLabel, emath::Numeric}, NativeOptions};
-// use rusqlite::{Result, Connection};
-// use rusqlite::NO_PARAMS;
 
 struct Headlines{
 	articles: Vec<NewsCardData>
