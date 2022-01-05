@@ -1,3 +1,4 @@
+#![windows_subsystem = "windows"]
 use crate::data_base;
 
 use std::{thread::{self, sleep}, process::{Command, Child}};

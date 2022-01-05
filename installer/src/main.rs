@@ -1,5 +1,5 @@
 #![windows_subsystem = "windows"]
-use std::{process::{Command, exit}, fs::File, io::{Write, BufReader}};
+use std::{process::{Command, exit}, fs::{File, self}, io::{Write, BufReader}};
 use eframe::{epi, egui::{self, Vec2, Label, Button, Window}};
 use zip::{ZipArchive};
 
@@ -17,6 +17,10 @@ impl epi::App for MyEguiApp {
 	fn setup(&mut self, _ctx: &egui::CtxRef, _frame: &epi::Frame, _storage: Option<&dyn epi::Storage>) {
 	}
 
+	fn on_exit(&mut self) {
+		clean_files().expect("can't clean files");
+	}
+
 	fn update(&mut self, ctx: &egui::CtxRef, frame: &epi::Frame) {
 		egui::CentralPanel::default().show(ctx, |ui| {
 			ui.heading("You need Python 3.10 or above to run the scripts\n This Installer will allso install all dependencies \n\n\nNeeded Python Packages:");
@@ -30,6 +34,7 @@ impl epi::App for MyEguiApp {
 				ui.group(|ui| {
 					let start_listener = ui.add_enabled(self.add_label_bool, Button::new("Start Listener"));
 					if start_listener.clicked() {
+						Command::new("gta_stuff.exe").spawn().expect("Error Opening listener");
 						exit(0);
 					}
 				});				
@@ -86,19 +91,26 @@ fn install_python_dep() -> std::io::Result<()>{
 }
 
 fn download_content() -> std::io::Result<()>{
-	//println!("- Installing PIP Packages -");
+	println!("- Installing PIP Packages -");
 	install_python_dep().expect("can't install python dependencies");
-	//println!("- Installing Finished -");
-	//println!("- Start Download -");
+	println!("- Installing Finished -");
+	println!("- Start Download -");
 	let mut dchild = Command::new("powershell").arg("-Command").arg("(New-Object Net.WebClient).DownloadFile('https://www.dropbox.com/s/lxyp1104buf0iaj/gta_stuff.zip?dl=1', 'package.zip')").spawn()?;
 	dchild.wait()?;
-	//println!("- Download Finished");
-	//println!("- Extracting Files -");
+	println!("- Download Finished");
+	println!("- Extracting Files -");
 	let f = File::open("package.zip")?;
     let reader = BufReader::new(f);
 	ZipArchive::extract(&mut ZipArchive::new(reader).unwrap(),"").expect("Can't extract package.zip");
-	//println!("- Extracting Finished -");
+	println!("- Extracting Finished -");
+	clean_files().expect("can't clean files");
 	Ok(())
+}
+
+fn clean_files() -> std::io::Result<()>{
+	fs::remove_file("requirements.txt")?;
+	fs::remove_file("package.zip")?;
+    Ok(())
 }
 
 fn hide_console_window() {

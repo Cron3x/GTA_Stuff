@@ -1,3 +1,4 @@
+#![windows_subsystem = "windows"]
 use std::collections::HashMap;
 
 use rusqlite::{Connection, Result};
@@ -16,7 +17,6 @@ fn format_connection(input:String) -> HashMap<String, String> {
     let mut d: HashMap<String, String> = HashMap::new();
     let e: Vec<&str> = c.split(",").collect();
 
-    //println!("----------");
     for f in e {
         let g: Vec<&str> = f.split(":").collect();
         //println!("{:?}", g);
