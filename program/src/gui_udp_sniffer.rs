@@ -1,11 +1,13 @@
 #![windows_subsystem = "windows"]
 use crate::data_base;
 
-use std::{thread::{self, sleep}, process::{Command, Child}};
-use eframe::{run_native, epi::App, egui::{CentralPanel, ScrollArea, Vec2, CtxRef, FontDefinitions, FontFamily, Label, Button, self, SelectableLabel, emath::Numeric}, NativeOptions};
+use std::{thread::{self}, process::{Command}, os::windows::process::CommandExt};
+use eframe::{run_native, epi::App, egui::{CentralPanel, ScrollArea, Vec2, CtxRef, FontDefinitions, FontFamily, Label, Button}, NativeOptions};
+
+static mut TOGGLE_LOGGING:bool = false;
 
 struct Headlines{
-	articles: Vec<NewsCardData>
+	articles: Vec<NewsCardData>,
 }
 
 impl Headlines {
@@ -18,26 +20,18 @@ impl Headlines {
 			location: format!("Location: {}", data[&a]["location"]),
 		});
 		Headlines {
-			articles: Vec::from_iter(iter)
+			articles: Vec::from_iter(iter),
 		}
 	}
 
-	fn child(&self, ctx: &CtxRef) -> Child{
-		let child = Command::new("python")
-					.args(["scripts/ip_grabber.py"])
-					.spawn()
-					.expect("failed to start external executable");
-		return child;
-	}
-
-	fn configure_fonts(&self, ctx: &CtxRef) {
-		let mut font_def = FontDefinitions::default();
-		//font_def.font_data.insert("MesloLGS".to_string(), Cow::Borrowed(include_bytes!("../assets/fonts/MesloLGSNF.ttf")));
-		font_def.family_and_size.insert(eframe::egui::TextStyle::Heading, (FontFamily::Proportional, 35.));
-		font_def.family_and_size.insert(eframe::egui::TextStyle::Body, (FontFamily::Proportional, 20.));
-		font_def.fonts_for_family.get_mut(&FontFamily::Proportional).unwrap().insert(0, "MesloLGS".to_string());
-		ctx.set_fonts(font_def);
-	}
+	// fn configure_fonts(&self, ctx: &CtxRef) {
+	// 	let mut font_def = FontDefinitions::default();
+	// 	//font_def.font_data.insert("MesloLGS".to_string(), Cow::Borrowed(include_bytes!("../assets/fonts/MesloLGSNF.ttf")));
+	// 	font_def.family_and_size.insert(eframe::egui::TextStyle::Heading, (FontFamily::Proportional, 35.));
+	// 	font_def.family_and_size.insert(eframe::egui::TextStyle::Body, (FontFamily::Proportional, 20.));
+	// 	font_def.fonts_for_family.get_mut(&FontFamily::Proportional).unwrap().insert(0, "MesloLGS".to_string());
+	// 	ctx.set_fonts(font_def);
+	// }
 }
 
 struct NewsCardData{
@@ -50,7 +44,20 @@ impl App for Headlines {
 	fn update(&mut self, ctx: &eframe::egui::CtxRef, frame: &eframe::epi::Frame) {
 		CentralPanel::default().show(ctx, |ui| {
 			ui.horizontal(|ui| {
-				let toggle_ip_listing = ui.add_sized((300.0, 20.0), Button::new("Start IP listing"));	//TODO: Selectable Label
+
+				unsafe {
+					let toggle_ip_listing_btn_txt = if TOGGLE_LOGGING{
+						"Stop Listener"
+					} else {
+						"Start Listener"
+					};
+				
+					let toggle_ip_listing_btn = ui.add_sized((300.0, 20.0), Button::new(toggle_ip_listing_btn_txt));	//TODO: Selectable Label
+					if toggle_ip_listing_btn.clicked() {
+						TOGGLE_LOGGING = !TOGGLE_LOGGING;
+						sniffing_thread()
+					}
+				}
 				let renew_ips = ui.add_sized((100.0, 20.0), Button::new("Delete IP list"));
 				let save_to_file = ui.add_sized((100.0, 20.0), Button::new("Save To CSV File"));
 				
@@ -60,11 +67,6 @@ impl App for Headlines {
 				if save_to_file.clicked(){
 					//TODO: save current list to csv file
 				}
-				if toggle_ip_listing.clicked() {
-					//(TODO:) start thread with python file and stop it on next click
-					sniffing_thread()
-				}
-
 			});
 			ScrollArea::vertical().show(ui, |ui|{
 				ui.add_sized((540.0, 0.0), Label::new(""));
@@ -92,21 +94,29 @@ impl App for Headlines {
 		_storage: Option<&dyn eframe::epi::Storage>,
 	) {
 		//self.configure_fonts(ctx);
-		
 	}
 	fn on_exit(&mut self) {
-		
+		unsafe {
+			TOGGLE_LOGGING = false;
+		}
 	}
 }
 
 
 fn sniffing_thread(){
-	thread::spawn(move ||{
-		while true {
-			let mut cmd = Command::new("python").arg("scripts/ip_grabber.py").spawn().expect("--------------------------------------------------------------------------------------------------------------------------------");
-			cmd.wait().expect("command wasn't running");
+	unsafe {
+		if TOGGLE_LOGGING {
+			thread::spawn(move ||{
+				while TOGGLE_LOGGING == true {
+					let mut cmd = Command::new("python").arg("scripts/ip_grabber.pyw")
+						.creation_flags(winapi::um::winbase::CREATE_NO_WINDOW)
+						.spawn()
+						.expect("--------------------------------------------------------------------------------------------------------------------------------");
+					cmd.wait().expect("command wasn't running");
+				}
+			});
 		}
-	});
+	}
 }
 
 pub fn main() {

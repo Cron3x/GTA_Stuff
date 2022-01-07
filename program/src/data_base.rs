@@ -55,12 +55,12 @@ pub fn read(tabel: &str) -> Result<HashMap<usize, HashMap<String, String>>> {
     Ok(connection_map)
 }
 
-pub fn create_table(table: &str) -> Result<()>{
+pub fn create_table(table: &str) -> Result<(), rusqlite::Error> {
     let con = Connection::open("communicate.db")?;
 
-    con.execute(format!("CREATE TABLE ips (ip text, location text)").as_str(),NO_PARAMS)?;  //TODO: Modular machen (Hashmap mit entires)
+    let c_t = con.execute(format!("CREATE TABLE ips (ip text, location text)").as_str(),NO_PARAMS);  //TODO: Modular machen (Hashmap mit entires)
 
-    con.close().expect("cant close db connection [clear function]");
+    let c = con.close();
     Ok(())
 }
 

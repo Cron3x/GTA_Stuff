@@ -1,5 +1,5 @@
 #![windows_subsystem = "windows"]
-use std::{process::{Command, exit}, fs::{File, self}, io::{Write, BufReader}};
+use std::{process::{Command, exit}, fs::{File, self}, io::{Write, BufReader}, env};
 use eframe::{epi, egui::{self, Vec2, Label, Button, Window}};
 use zip::{ZipArchive};
 
@@ -22,62 +22,117 @@ impl epi::App for MyEguiApp {
 	}
 
 	fn update(&mut self, ctx: &egui::CtxRef, frame: &epi::Frame) {
-		egui::CentralPanel::default().show(ctx, |ui| {
-			ui.heading("You need Python 3.10 or above to run the scripts\n This Installer will allso install all dependencies \n\n\nNeeded Python Packages:");
-			ui.label("	- ip2geotools 								  	[ To localization the IP ]");
-			ui.label("	- scapy													[ Analyze the Network Traffic ]");
-			
-			ui.label("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-			
-			ui.horizontal(|ui| {			
-
-				ui.group(|ui| {
-					let start_listener = ui.add_enabled(self.add_label_bool, Button::new("Start Listener"));
-					if start_listener.clicked() {
-						Command::new("gta_stuff.exe").spawn().expect("Error Opening listener");
-						exit(0);
-					}
-				});				
-
-				ui.add_sized((132.,0.), Label::new(" "));
-
-				let window = Window::new("")
-						.vscroll(false)
-						.collapsible(false)
-						.title_bar(false)
-						.resizable(false)
-						.default_pos((175.,175.));
-
+		let args: Vec<String> = env::args().collect();
+		if args.contains(&"--update".to_string()) {
+			egui::CentralPanel::default().show(ctx, |ui| {
+				ui.heading("Update to newses version\nTo Update:");
+				ui.label("	- ip2geotools 								  	[ To localization the IP ]");
+				ui.label("	- scapy													[ Analyze the Network Traffic ]");
 				
+				ui.label("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+				
+				ui.horizontal(|ui| {			
+				
+					ui.add_sized((250.,0.), Label::new(" "));
 
-				let text = if self.cont_btn_bool {
-					"Working"
-				} else {
-					"Continue"
-				};
-
-				ui.group(|ui| {
-					if ui.button( "Download Python").clicked() {
-						Command::new("powershell ").arg("start").arg("https://www.python.org/").spawn().expect("can't open Browser");
-					}
-
-					if ui.button(text).clicked() {
+					let window = Window::new("")
+							.vscroll(false)
+							.collapsible(false)
+							.title_bar(false)
+							.resizable(false)
+							.default_pos((175.,175.));
+	
+					let text = if self.cont_btn_bool {
+						"Working"
+					} else {
+						"Update"
+					};
+	
+					ui.group(|ui| {
+						if ui.button( "Start listener").clicked() {
+							Command::new("gta_stuff.exe").spawn().expect("Error Opening listener");
+							exit(0);
+						}
+	
+						let continue_btn = ui.button(text);
+	
+						if continue_btn.clicked() {
+							self.cont_btn_bool = !self.cont_btn_bool;
+							window.show(ctx, |ui|{
+								ui.add_space(20.);
+								ui.label("			Installing\n	 please stand by		");
+								ui.add_space(20.);
+							});
+						}
+					});
+	
+					if text == "Working"{
+						download_content().expect("can't download rest of the program");
 						self.cont_btn_bool = !self.cont_btn_bool;
-						window.show(ctx, |ui|{
-							ui.add_space(20.);
-							ui.label("			Installing\n	 please stand by		");
-							ui.add_space(20.);
-						});
+						self.add_label_bool = true;
 					}
-				});
-
-				if text == "Working"{
-					download_content().expect("can't download rest of the program");
-					self.cont_btn_bool = !self.cont_btn_bool;
-					self.add_label_bool = true;
-				}
+				});		
 			});
-		});
+		} else{
+			egui::CentralPanel::default().show(ctx, |ui| {
+				ui.heading("You need Python 3.10 or above to run the scripts\n This Installer will allso install all dependencies \n\n\nNeeded Python Packages:");
+				ui.label("	- ip2geotools 								  	[ To localization the IP ]");
+				ui.label("	- scapy													[ Analyze the Network Traffic ]");
+				
+				ui.label("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+				
+				ui.horizontal(|ui| {			
+	
+					ui.group(|ui| {
+						let start_listener = ui.add_enabled(self.add_label_bool, Button::new("Start Listener"));
+						if start_listener.clicked() {
+							Command::new("gta_stuff.exe").spawn().expect("Error Opening listener");
+							exit(0);
+						}
+					});				
+	
+					ui.add_sized((132.,0.), Label::new(" "));
+	
+	
+	
+					let window = Window::new("")
+							.vscroll(false)
+							.collapsible(false)
+							.title_bar(false)
+							.resizable(false)
+							.default_pos((175.,175.));
+	
+					let text = if self.cont_btn_bool {
+						"Working"
+					} else {
+						"Continue"
+					};
+	
+					ui.group(|ui| {
+						if ui.button( "Download Python").clicked() {
+							Command::new("powershell ").arg("start").arg("https://www.python.org/").spawn().expect("can't open Browser");
+						}
+	
+						let continue_btn = ui.button(text);
+	
+						if continue_btn.clicked() {
+							self.cont_btn_bool = !self.cont_btn_bool;
+							window.show(ctx, |ui|{
+								ui.add_space(20.);
+								ui.label("			Installing\n	 please stand by		");
+								ui.add_space(20.);
+							});
+						}
+					});
+	
+					if text == "Working"{
+						download_content().expect("can't download rest of the program");
+						self.cont_btn_bool = !self.cont_btn_bool;
+						self.add_label_bool = true;
+					}
+				});		
+			});
+		}
 	}
 }
 
@@ -113,12 +168,11 @@ fn clean_files() -> std::io::Result<()>{
     Ok(())
 }
 
-fn hide_console_window() {
-    unsafe { winapi::um::wincon::FreeConsole() };
-}
 // 
 fn main() {
-	hide_console_window();
+	let args: Vec<String> = env::args().collect();
+    println!("{:?}", args);
+
 	let app = MyEguiApp::default();
 	let mut native_options = eframe::NativeOptions::default();
 	native_options.initial_window_size = Some(Vec2::new(444., 444.));
