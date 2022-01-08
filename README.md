@@ -6,9 +6,10 @@
 ## Features
 
 - IP Grapper (With GUI)
-- yeah, nothing else realy...
-- so i guess
-- to be continued?
+- yeah, nothing else, realy...
+- so...
+- yeah?
+- just try it
 
 ### Disclamer
 I am not responsible for anything you are doing with this software. 
