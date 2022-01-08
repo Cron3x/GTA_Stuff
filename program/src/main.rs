@@ -25,7 +25,7 @@ fn new_version() -> Result<(), reqwest::Error> {
 }
 
 fn rf() -> std::io::Result<String>{
-    let contents = fs::read_to_string("cur.version") 
+    let contents = fs::read_to_string(".version") 
         .expect("Something went wrong reading the file");
     Ok(contents)
 }
