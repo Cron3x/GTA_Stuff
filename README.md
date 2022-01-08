@@ -1,6 +1,6 @@
 # GTA Stuff
 
-[![version](https://img.shields.io/badge/version-1.0.0-gree.svg)](https://semver.org)
+[![version](https://img.shields.io/badge/version-0.0.2-gree.svg)](https://semver.org)
 
 
 ## Features
