@@ -74,6 +74,7 @@ impl epi::App for MyEguiApp {
 				});		
 			});
 		} else{
+			//BOOK_MARK: FIRST INSTALL
 			egui::CentralPanel::default().show(ctx, |ui| {
 				ui.heading("You need Python 3.10 or above to run the scripts\n This Installer will allso install all dependencies \n\n\nNeeded Python Packages:");
 				ui.label("	- ip2geotools 								  	[ To localization the IP ]");
@@ -92,9 +93,7 @@ impl epi::App for MyEguiApp {
 					});				
 	
 					ui.add_sized((132.,0.), Label::new(" "));
-	
-	
-	
+
 					let window = Window::new("")
 							.vscroll(false)
 							.collapsible(false)
@@ -159,12 +158,34 @@ fn download_content() -> std::io::Result<()>{
 	ZipArchive::extract(&mut ZipArchive::new(reader).unwrap(),"").expect("Can't extract package.zip");
 	println!("- Extracting Finished -");
 	clean_files().expect("can't clean files");
+	w_version_file().expect("can't create version files");
 	Ok(())
 }
 
 fn clean_files() -> std::io::Result<()>{
 	fs::remove_file("requirements.txt")?;
 	fs::remove_file("package.zip")?;
+    Ok(())
+}
+
+fn w_action(path:&str, content:&str) -> std::io::Result<()>{
+	let mut file = std::fs::File::create(path)?;
+	std::io::Write::write_all(&mut file, content.as_bytes())?;
+	Ok(())
+}
+
+fn w_version_file() -> reqwest::Result<()> {
+    let body = reqwest::blocking::get("https://raw.githubusercontent.com/Cron3x/GTA_Stuff/main/README.md")?.text()?;
+    let sp: Vec<&str> = body.split("\n").collect();
+    for i in 0..sp.len() {
+        if sp[i].contains("[![version]"){
+            let a:Vec<&str> = sp[i].split("version-").collect();
+            let b:Vec<&str> = a[1].split("-gree.svg)").collect();
+            let c = b[0];
+            println!("{}",c);
+			w_action(".version", c).expect("could not write version file");
+        } 
+    }
     Ok(())
 }
 

@@ -4,3 +4,4 @@ package.zip
 requirements.txt
 /git-stuff
 /update-server
+*.exe
