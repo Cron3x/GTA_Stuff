@@ -1,0 +1,16 @@
+[package]
+name = "injector"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# winapi is the crate for the Windows API
+winapi = { version = "^0.3", features = ["std", "everything"] }
+# libc defines types which are often used in CXX
+libc = { version = "^0.2", features = ["use_std", "extra_traits"] }
+# getset is a crate which allows you to use attributes for getting & setting; this is not needed but is nice to have
+getset = "0.1.2"
+# failure is an error crate which allows you to have nicely formatted and handled errors with no runtime cost due to Rust's no-cost abstraction; not needed but nice
+failure = "^0.1"

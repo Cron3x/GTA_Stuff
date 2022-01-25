@@ -10,7 +10,6 @@ eframe = "0.16.0"
 winapi = {version = "0.3", features = ["wincon", "winuser"]}
 reqwest = {version = "0.11.8", features = ["blocking"]}
 zip = "0.5.13"
-
-[dependencies.rusqlite]
-version = "0.26.0"
-features = ["bundled"]
+rusqlite = {version = "0.26.0", features = ["bundled"]}
+futures = "0.3"
+tokio = {version = "1.15.0", features = ["full"]}

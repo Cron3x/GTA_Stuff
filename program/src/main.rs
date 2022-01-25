@@ -1,6 +1,6 @@
-//#![windows_subsystem = "windows"]
+#![windows_subsystem = "windows"]
 
-use std::{fs,process::{Command, exit}, thread};
+use std::{fs};
 mod gui_udp_sniffer;
 mod data_base;
 

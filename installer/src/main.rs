@@ -3,6 +3,10 @@ use std::{process::{Command, exit}, fs::{File, self}, io::{Write, BufReader}, en
 use eframe::{epi, egui::{self, Vec2, Label, Button, Window}};
 use zip::{ZipArchive};
 
+
+static mut TOGGLE_INSTALLING:bool = false;
+static mut SHOW_INSTALLING:bool = false;
+
 #[derive(Default)]
 struct MyEguiApp {
 	cont_btn_bool: bool,
@@ -21,6 +25,7 @@ impl epi::App for MyEguiApp {
 		clean_files().expect("can't clean files");
 	}
 
+
 	fn update(&mut self, ctx: &egui::CtxRef, frame: &epi::Frame) {
 		let args: Vec<String> = env::args().collect();
 		if args.contains(&"--update".to_string()) {
@@ -31,48 +36,65 @@ impl epi::App for MyEguiApp {
 				
 				ui.label("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 				
-				ui.horizontal(|ui| {			
-				
-					ui.add_sized((250.,0.), Label::new(" "));
-
+				unsafe {
+				ui.horizontal(|ui| {				
+						ui.group(|ui| {
+							let start_listener = ui.add_enabled(self.add_label_bool && !SHOW_INSTALLING, Button::new("Start Listener"));
+							if start_listener.clicked() {
+								Command::new("gta_stuff.exe").spawn().expect("Error Opening listener");
+								exit(0);
+							}
+						});				
+					ui.add_sized((132.,0.), Label::new(" "));
+					
 					let window = Window::new("")
-							.vscroll(false)
-							.collapsible(false)
-							.title_bar(false)
-							.resizable(false)
-							.default_pos((175.,175.));
-	
-					let text = if self.cont_btn_bool {
-						"Working"
-					} else {
-						"Update"
-					};
-	
-					ui.group(|ui| {
-						if ui.button( "Start listener").clicked() {
-							Command::new("gta_stuff.exe").spawn().expect("Error Opening listener");
-							exit(0);
+					.vscroll(false)
+					.collapsible(false)
+					.title_bar(false)
+					.resizable(false)
+					.default_pos((175.,175.))
+					.anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO);
+					
+						let text = if SHOW_INSTALLING {
+							"Working"
+						} else {
+							"Continue"
+						};
+						ui.group(|ui| {
+							if ui.add_enabled( !SHOW_INSTALLING,Button::new( "Download Python")).clicked() {
+								Command::new("powershell ").arg("start").arg("https://www.python.org/").spawn().expect("can't open Browser");
+							}
+							
+							let continue_btn = ui.add_enabled(!SHOW_INSTALLING, Button::new(text)); 
+							
+							if continue_btn.clicked() {
+								TOGGLE_INSTALLING = !TOGGLE_INSTALLING;
+								SHOW_INSTALLING = !SHOW_INSTALLING;
+							}
+							
+							if SHOW_INSTALLING {
+								self.cont_btn_bool = !self.cont_btn_bool;
+								window.show(ctx, |ui|{
+									ui.add_space(20.);
+									ui.label("			Installing\n	 please stand by		");
+									ui.add_space(20.);
+								});
+							}
+						});
+						
+						if text == "Working"{
+							if TOGGLE_INSTALLING {
+								self.cont_btn_bool = !self.cont_btn_bool;
+								self.add_label_bool = true;
+								download_content();
+								TOGGLE_INSTALLING = !TOGGLE_INSTALLING;
+							}
 						}
-	
-						let continue_btn = ui.button(text);
-	
-						if continue_btn.clicked() {
-							self.cont_btn_bool = !self.cont_btn_bool;
-							window.show(ctx, |ui|{
-								ui.add_space(20.);
-								ui.label("			Installing\n	 please stand by		");
-								ui.add_space(20.);
-							});
-						}
-					});
-	
-					if text == "Working"{
-						download_content().expect("can't download rest of the program");
-						self.cont_btn_bool = !self.cont_btn_bool;
-						self.add_label_bool = true;
-					}
 				});		
+			}
+				
 			});
+
 		} else{
 			//BOOK_MARK: FIRST INSTALL
 			egui::CentralPanel::default().show(ctx, |ui| {
@@ -82,61 +104,68 @@ impl epi::App for MyEguiApp {
 				
 				ui.label("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 				
-				ui.horizontal(|ui| {			
-	
-					ui.group(|ui| {
-						let start_listener = ui.add_enabled(self.add_label_bool, Button::new("Start Listener"));
-						if start_listener.clicked() {
-							Command::new("gta_stuff.exe").spawn().expect("Error Opening listener");
-							exit(0);
-						}
-					});				
-	
+				unsafe {
+				ui.horizontal(|ui| {				
+						ui.group(|ui| {
+							let start_listener = ui.add_enabled(self.add_label_bool && !SHOW_INSTALLING, Button::new("Start Listener"));
+							if start_listener.clicked() {
+								Command::new("gta_stuff.exe").spawn().expect("Error Opening listener");
+								exit(0);
+							}
+						});				
 					ui.add_sized((132.,0.), Label::new(" "));
-
+					
 					let window = Window::new("")
-							.vscroll(false)
-							.collapsible(false)
-							.title_bar(false)
-							.resizable(false)
-							.default_pos((175.,175.));
-	
-					let text = if self.cont_btn_bool {
-						"Working"
-					} else {
-						"Continue"
-					};
-	
-					ui.group(|ui| {
-						if ui.button( "Download Python").clicked() {
-							Command::new("powershell ").arg("start").arg("https://www.python.org/").spawn().expect("can't open Browser");
+					.vscroll(false)
+					.collapsible(false)
+					.title_bar(false)
+					.resizable(false)
+					.default_pos((175.,175.))
+					.anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO);
+					
+						let text = if SHOW_INSTALLING {
+							"Working"
+						} else {
+							"Continue"
+						};
+						ui.group(|ui| {
+							if ui.add_enabled( !SHOW_INSTALLING,Button::new( "Download Python")).clicked() {
+								Command::new("powershell ").arg("start").arg("https://www.python.org/").spawn().expect("can't open Browser");
+							}
+							
+							let continue_btn = ui.add_enabled(!SHOW_INSTALLING, Button::new(text)); 
+							
+							if continue_btn.clicked() {
+								TOGGLE_INSTALLING = !TOGGLE_INSTALLING;
+								SHOW_INSTALLING = !SHOW_INSTALLING;
+							}
+							
+							if SHOW_INSTALLING {
+								self.cont_btn_bool = !self.cont_btn_bool;
+								window.show(ctx, |ui|{
+									ui.add_space(20.);
+									ui.label("			Installing\n	 please stand by		");
+									ui.add_space(20.);
+								});
+							}
+						});
+						
+						if text == "Working"{
+							if TOGGLE_INSTALLING {
+								self.cont_btn_bool = !self.cont_btn_bool;
+								self.add_label_bool = true;
+								download_content();
+								TOGGLE_INSTALLING = !TOGGLE_INSTALLING;
+							}
 						}
-	
-						let continue_btn = ui.button(text);
-	
-						if continue_btn.clicked() {
-							self.cont_btn_bool = !self.cont_btn_bool;
-							window.show(ctx, |ui|{
-								ui.add_space(20.);
-								ui.label("			Installing\n	 please stand by		");
-								ui.add_space(20.);
-							});
-						}
-					});
-	
-					if text == "Working"{
-						download_content().expect("can't download rest of the program");
-						self.cont_btn_bool = !self.cont_btn_bool;
-						self.add_label_bool = true;
-					}
 				});		
-			});
+			}
+		});
 		}
 	}
 }
 
 fn install_python_dep() -> std::io::Result<()>{
-
 	let mut file = File::create("requirements.txt")?;
     file.write_all(b"ip2geotools\nscapy")?;
 	let mut cmd = Command::new("pip3").args(["install", "-r", "requirements.txt"]).spawn().expect("msg");
@@ -144,22 +173,26 @@ fn install_python_dep() -> std::io::Result<()>{
 	Ok(())
 }
 
-fn download_content() -> std::io::Result<()>{
-	println!("- Installing PIP Packages -");
-	install_python_dep().expect("can't install python dependencies");
-	println!("- Installing Finished -");
-	println!("- Start Download -");
-	let mut dchild = Command::new("powershell").arg("-Command").arg("(New-Object Net.WebClient).DownloadFile('https://www.dropbox.com/s/lxyp1104buf0iaj/gta_stuff.zip?dl=1', 'package.zip')").spawn()?;
-	dchild.wait()?;
-	println!("- Download Finished");
-	println!("- Extracting Files -");
-	let f = File::open("package.zip")?;
-    let reader = BufReader::new(f);
-	ZipArchive::extract(&mut ZipArchive::new(reader).unwrap(),"").expect("Can't extract package.zip");
-	println!("- Extracting Finished -");
-	clean_files().expect("can't clean files");
-	w_version_file().expect("can't create version files");
-	Ok(())
+fn download_content(){
+	std::thread::spawn(|| {
+		println!("- Installing PIP Packages -");
+		install_python_dep().expect("can't install python dependencies");
+		println!("- Installing Finished -");
+		println!("- Start Download -");
+		let mut dchild = Command::new("powershell").arg("-Command").arg("(New-Object Net.WebClient).DownloadFile('https://www.dropbox.com/s/lxyp1104buf0iaj/gta_stuff.zip?dl=1', 'package.zip')").spawn().expect("cant download file");
+		dchild.wait().expect("cant download file x2");
+		println!("- Download Finished");
+		println!("- Extracting Files -");
+		let f = File::open("package.zip").expect("Can't open package.zip");
+		let reader = BufReader::new(f);
+		ZipArchive::extract(&mut ZipArchive::new(reader).unwrap(),"").expect("Can't extract package.zip");
+		println!("- Extracting Finished -");
+		clean_files().expect("can't clean files");
+		w_version_file().expect("can't create version files");
+		unsafe {
+			SHOW_INSTALLING = !SHOW_INSTALLING;
+		}
+	});
 }
 
 fn clean_files() -> std::io::Result<()>{
@@ -189,8 +222,8 @@ fn w_version_file() -> reqwest::Result<()> {
     Ok(())
 }
 
-// 
-fn main() {
+// TODO: File Dialog, where to save the program, download installer to same location
+fn main(){
 	let args: Vec<String> = env::args().collect();
     println!("{:?}", args);
 

@@ -2,7 +2,7 @@
 use crate::data_base;
 
 use std::{thread::{self}, process::{Command}, os::windows::process::CommandExt};
-use eframe::{run_native, epi::App, egui::{CentralPanel, ScrollArea, Vec2, CtxRef, FontDefinitions, FontFamily, Label, Button}, NativeOptions};
+use eframe::{run_native, epi::App, egui::{CentralPanel, ScrollArea, Vec2, Label, Button}, NativeOptions};
 
 static mut TOGGLE_LOGGING:bool = false;
 
