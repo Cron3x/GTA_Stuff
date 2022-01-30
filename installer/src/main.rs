@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+//#![windows_subsystem = "windows"]
 use std::{process::{Command, exit}, fs::{File, self}, io::{Write, BufReader}, env};
 use eframe::{epi, egui::{self, Vec2, Label, Button, Window}};
 use zip::{ZipArchive};
@@ -37,60 +37,60 @@ impl epi::App for MyEguiApp {
 				ui.label("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 				
 				unsafe {
-				ui.horizontal(|ui| {				
-						ui.group(|ui| {
-							let start_listener = ui.add_enabled(self.add_label_bool && !SHOW_INSTALLING, Button::new("Start Listener"));
-							if start_listener.clicked() {
-								Command::new("gta_stuff.exe").spawn().expect("Error Opening listener");
-								exit(0);
-							}
-						});				
-					ui.add_sized((132.,0.), Label::new(" "));
-					
-					let window = Window::new("")
-					.vscroll(false)
-					.collapsible(false)
-					.title_bar(false)
-					.resizable(false)
-					.default_pos((175.,175.))
-					.anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO);
-					
-						let text = if SHOW_INSTALLING {
-							"Working"
-						} else {
-							"Continue"
-						};
-						ui.group(|ui| {
-							if ui.add_enabled( !SHOW_INSTALLING,Button::new( "Download Python")).clicked() {
-								Command::new("powershell ").arg("start").arg("https://www.python.org/").spawn().expect("can't open Browser");
-							}
-							
-							let continue_btn = ui.add_enabled(!SHOW_INSTALLING, Button::new(text)); 
-							
-							if continue_btn.clicked() {
-								TOGGLE_INSTALLING = !TOGGLE_INSTALLING;
-								SHOW_INSTALLING = !SHOW_INSTALLING;
-							}
-							
-							if SHOW_INSTALLING {
-								self.cont_btn_bool = !self.cont_btn_bool;
-								window.show(ctx, |ui|{
-									ui.add_space(20.);
-									ui.label("			Installing\n	 please stand by		");
-									ui.add_space(20.);
-								});
-							}
-						});
+					ui.horizontal(|ui| {				
+							ui.group(|ui| {
+								let start_listener = ui.add_enabled(self.add_label_bool && !SHOW_INSTALLING, Button::new("Start Listener"));
+								if start_listener.clicked() {
+									Command::new("gta_stuff.exe").spawn().expect("Error Opening listener");
+									exit(0);
+								}
+							});				
+						ui.add_sized((132.,0.), Label::new(" "));
 						
-						if text == "Working"{
-							if TOGGLE_INSTALLING {
-								self.cont_btn_bool = !self.cont_btn_bool;
-								self.add_label_bool = true;
-								download_content();
-								TOGGLE_INSTALLING = !TOGGLE_INSTALLING;
+						let window = Window::new("")
+						.vscroll(false)
+						.collapsible(false)
+						.title_bar(false)
+						.resizable(false)
+						.default_pos((175.,175.))
+						.anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO);
+						
+							let text = if SHOW_INSTALLING {
+								"Working"
+							} else {
+								"Continue"
+							};
+							ui.group(|ui| {
+								if ui.add_enabled( !SHOW_INSTALLING,Button::new( "Download Python")).clicked() {
+									Command::new("powershell ").arg("start").arg("https://www.python.org/").spawn().expect("can't open Browser");
+								}
+								
+								let continue_btn = ui.add_enabled(!SHOW_INSTALLING, Button::new(text)); 
+								
+								if continue_btn.clicked() {
+									TOGGLE_INSTALLING = !TOGGLE_INSTALLING;
+									SHOW_INSTALLING = !SHOW_INSTALLING;
+								}
+								
+								if SHOW_INSTALLING {
+									self.cont_btn_bool = !self.cont_btn_bool;
+									window.show(ctx, |ui|{
+										ui.add_space(20.);
+										ui.label("			Installing\n	 please stand by		");
+										ui.add_space(20.);
+									});
+								}
+							});
+							
+							if text == "Working"{
+								if TOGGLE_INSTALLING {
+									self.cont_btn_bool = !self.cont_btn_bool;
+									self.add_label_bool = true;
+									download_content();
+									TOGGLE_INSTALLING = !TOGGLE_INSTALLING;
+								}
 							}
-						}
-				});		
+					});		
 			}
 				
 			});

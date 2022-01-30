@@ -1,13 +1,28 @@
-#![windows_subsystem = "windows"]
+//#![windows_subsystem = "windows"]
 use crate::data_base;
 
 use std::{thread::{self}, process::{Command}, os::windows::process::CommandExt};
-use eframe::{run_native, epi::App, egui::{CentralPanel, ScrollArea, Vec2, Label, Button}, NativeOptions};
+use eframe::{run_native, epi::App, egui::{CentralPanel, ScrollArea, Vec2, Label, Button, self, Window}, NativeOptions};
 
 static mut TOGGLE_LOGGING:bool = false;
+static mut TOGGLE_SAVE_WINDOW:bool = false;
+
+pub struct CSVWindow {
+    seperator: String,
+}
+
+impl CSVWindow {
+    fn CSVWindow() -> Self {
+        Self {
+            seperator: ",".to_owned(),
+        }
+    }
+}
+
 
 struct Headlines{
 	articles: Vec<NewsCardData>,
+	cont_btn_bool: bool,
 }
 
 impl Headlines {
@@ -21,6 +36,7 @@ impl Headlines {
 		});
 		Headlines {
 			articles: Vec::from_iter(iter),
+			cont_btn_bool: false,
 		}
 	}
 
@@ -64,9 +80,74 @@ impl App for Headlines {
 				if renew_ips.clicked(){
 					data_base::clear("ips").expect("Can't clear tabel ips");
 				}
-				if save_to_file.clicked(){
-					//TODO: save current list to csv file
+
+				unsafe {
+					let csv_save_window = Window::new("Save to files")
+						.anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO);
+
+					if save_to_file.clicked(){
+						//TODO: save current list to csv file
+						TOGGLE_SAVE_WINDOW = !TOGGLE_SAVE_WINDOW;
+					}
+					
+					if TOGGLE_SAVE_WINDOW == true {
+						csv_save_window.show(ctx, |ui|{
+							//ui.add_space(100.);
+							ui.group(|ui| {
+								ui.horizontal(|ui|{
+									ui.vertical(|ui| {
+										ui.horizontal(|ui|{
+											ui.add_sized((10., 5.), Label::new("Seperator"));
+											let mut csv_window_options = CSVWindow::CSVWindow();
+											ui.add_space(10.);
+											ui.add_sized((5., 5.), egui::TextEdit::singleline(&mut csv_window_options.seperator));
+											
+										});
+									});
+									ui.add_space(100.);
+									ui.vertical(|ui| {
+										let arti = Headlines::new();
+										for a in &arti.articles{
+											let cur_ip = a.ip.as_str();
+											let vip: Vec<&str>= cur_ip.split(":").collect();
+											let mut _vip: Vec<&str> = vip[1].split("\"").collect();
+											ui.add(egui::TextEdit::singleline(&mut _vip[1]));
+											// let build = format!("{0}, {1}", &a.header, &a.ip);
+											// code = format!("{}", code).as_str();
+											// let beautyfied_location_a = format!("{}", a.location.replace("*", " "));
+											// let beautyfied_location_b = format!("{}", beautyfied_location_a.replace("+", ", "));
+											// ui.hyperlink_to(&beautyfied_location_b, format!("https://www.google.de/maps/search/{}", &beautyfied_location_b.replace("Location: ","")));
+										}
+									})
+								});
+								
+							});
+	
+							
+							
+
+							ui.add_space(20.);
+							ui.group(|ui| {
+								ui.horizontal(|ui| {
+									let c_btn = Button::new("Cancel");
+									let s_btn = Button::new("Save");
+									if ui.add_enabled(true, c_btn).clicked() {
+										TOGGLE_SAVE_WINDOW = !TOGGLE_SAVE_WINDOW;
+									}
+									ui.add_space(230.);
+									if ui.add_enabled(true, s_btn).clicked() {
+
+									}
+								});
+
+								
+								// ui.available_height();
+								// ui.available_width();
+							});
+						});
+					}
 				}
+					
 			});
 			ScrollArea::vertical().show(ui, |ui|{
 				ui.add_sized((540.0, 0.0), Label::new(""));

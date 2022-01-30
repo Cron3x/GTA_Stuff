@@ -5,3 +5,4 @@ requirements.txt
 /git-stuff
 /update-server
 *.exe
+release/

@@ -8,5 +8,12 @@ cargo build --release
 
 cd ..\
 mkdir "release"
-copy installer\target\release\gta_stuff_installer.exe .
-copy program\release\release\gta_stuff.exe .
+mkdir "release\program"
+copy installer\target\release\gta_stuff_installer.exe release\
+copy program\target\release\gta_stuff.exe release\program
+Xcopy /E program\scripts\ release\program\scripts\
+
+7z a release\gta_stuff.zip .\program
+
+timeout 3
+exit

@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+//#![windows_subsystem = "windows"]
 
 use std::{fs};
 mod gui_udp_sniffer;
@@ -32,7 +32,7 @@ fn rf() -> std::io::Result<String>{
 
 fn main() {
 
-    new_version().expect("msg");
+    //new_version().expect("msg");
 
     // if new_version() {
     //     Command::new("").arg("--update").spawn().expect("");
