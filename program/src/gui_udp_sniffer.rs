@@ -112,19 +112,12 @@ impl App for Headlines {
 											let vip: Vec<&str>= cur_ip.split(":").collect();
 											let mut _vip: Vec<&str> = vip[1].split("\"").collect();
 											ui.add(egui::TextEdit::singleline(&mut _vip[1]));
-											// let build = format!("{0}, {1}", &a.header, &a.ip);
-											// code = format!("{}", code).as_str();
-											// let beautyfied_location_a = format!("{}", a.location.replace("*", " "));
-											// let beautyfied_location_b = format!("{}", beautyfied_location_a.replace("+", ", "));
-											// ui.hyperlink_to(&beautyfied_location_b, format!("https://www.google.de/maps/search/{}", &beautyfied_location_b.replace("Location: ","")));
+											
 										}
 									})
 								});
 								
 							});
-	
-							
-							
 
 							ui.add_space(20.);
 							ui.group(|ui| {

@@ -1,4 +1,3 @@
-//#![windows_subsystem = "windows"]
 use std::collections::HashMap;
 
 use rusqlite::{Connection, Result};
