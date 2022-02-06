@@ -1,6 +1,6 @@
 from sqlite3 import connect
 #>-------------------------------<#
-# to comunicate with the database #
+# Functioms to comunicate with the database #
 #>-------------------------------<#
 def write_db(ip, location):
 	con = connect('communicate.db')

@@ -1,7 +1,6 @@
 use std::collections::HashMap;
-
+use rand::Rng;
 use rusqlite::{Connection, Result};
-use rusqlite::NO_PARAMS;
 
 #[derive(Debug)]
 struct GTAConnection {
@@ -34,7 +33,7 @@ pub fn read(tabel: &str) -> Result<HashMap<usize, HashMap<String, String>>> {
         format!("SELECT * FROM {};", tabel).as_str(),
     )?;
 
-    let gta_connections = stmt.query_map(NO_PARAMS, |row| {
+    let gta_connections = stmt.query_map([], |row| {
         Ok(GTAConnection {
             ip: row.get(0)?,
             location: row.get(1)?,
@@ -57,7 +56,7 @@ pub fn read(tabel: &str) -> Result<HashMap<usize, HashMap<String, String>>> {
 pub fn create_table(table: &str) -> Result<(), rusqlite::Error> {
     let con = Connection::open("communicate.db")?;
 
-    let c_t = con.execute(format!("CREATE TABLE ips (ip text, location text)").as_str(),NO_PARAMS);  //TODO: Modular machen (Hashmap mit entires)
+    let c_t = con.execute(format!("CREATE TABLE ips (ip text, location text)").as_str(),[]);  //TODO: Modular machen (Hashmap mit entires)
 
     let c = con.close();
     Ok(())
@@ -66,8 +65,24 @@ pub fn create_table(table: &str) -> Result<(), rusqlite::Error> {
 pub fn clear(table: &str) -> Result<()> {
     let con = Connection::open("communicate.db")?;
 
-    con.execute(format!("DELETE FROM {}", table).as_str(),NO_PARAMS)?;
+    con.execute(format!("DELETE FROM {}", table).as_str(),[])?;
 
     con.close().expect("cant close db connection [clear function]");
+    Ok(())
+}
+
+pub fn fill_with_dummy_data(table: &str, number:i32) -> Result<(), rusqlite::Error> {
+    create_table("").unwrap();
+    let con = Connection::open("communicate.db")?;
+    let mut rng = rand::thread_rng();
+    for i in 0..number {
+        let ru0: u8 = rng.gen();
+        let ru1: u8 = rng.gen();
+        let ru2: u8 = rng.gen();
+        let ru3: u8 = rng.gen();
+        let _ = con.execute(format!("REPLACE INTO ips VALUES ('{ip}','{location}')", ip=format!("{}.{}.{}.{}", ru0,ru1,ru2,ru3), location="Area 51+Nevada+USA").as_str(),[]);
+    }
+    
+    let _ = con.close();
     Ok(())
 }

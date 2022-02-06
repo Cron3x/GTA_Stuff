@@ -52,11 +52,11 @@ def get_location(ip:str) -> str:
 def main():
 	i=0
 	while i <= 2:
-		x = sniff(filter="udp and port 6672", prn=pc, store=1, count=1, timeout=10)			# GTA V Online UDP default Port is 6672
-		y = x[0][IP].src
-		z = x[0][IP].dst
+		sniffer = sniff(filter="udp and port 6672", prn=pc, store=1, count=1, timeout=10)			# GTA V Online UDP default Port is 6672
+		src = sniffer[0][IP].src
+		dst = sniffer[0][IP].dst
 
-		if z == "192.168.1.103":												#replace with your local IP
+		if dst == "192.168.1.103":												#replace with your local IP
 			pass
 		else:
 			#print("-----------------------------------------------------------")
@@ -72,8 +72,8 @@ def main():
 					pass
 				else:
 					#print(f"{z}")
-					write_db(z, get_location(z).replace(" ", "_"))
-					test_z.append(z)
+					write_db(dst, get_location(dst).replace(" ", "_"))
+					test_z.append(dst)
 			except Exception as e:
 				pass
 				#print(e)

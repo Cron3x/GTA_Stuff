@@ -1,8 +1,8 @@
 //#![windows_subsystem = "windows"]
 use crate::data_base;
 
-use std::{thread::{self}, process::{Command}, os::windows::process::CommandExt};
-use eframe::{run_native, epi::App, egui::{CentralPanel, ScrollArea, Vec2, Label, Button, self, Window}, NativeOptions};
+use std::{thread::{self}, process::{Command}, os::windows::{process::CommandExt}, fs, io::Write};
+use eframe::{run_native, epi::App, egui::{CentralPanel, ScrollArea, Vec2, Label, Button, self, Window, TextStyle}, NativeOptions};
 
 static mut TOGGLE_LOGGING:bool = false;
 static mut TOGGLE_SAVE_WINDOW:bool = false;
@@ -39,15 +39,6 @@ impl Headlines {
 			cont_btn_bool: false,
 		}
 	}
-
-	// fn configure_fonts(&self, ctx: &CtxRef) {
-	// 	let mut font_def = FontDefinitions::default();
-	// 	//font_def.font_data.insert("MesloLGS".to_string(), Cow::Borrowed(include_bytes!("../assets/fonts/MesloLGSNF.ttf")));
-	// 	font_def.family_and_size.insert(eframe::egui::TextStyle::Heading, (FontFamily::Proportional, 35.));
-	// 	font_def.family_and_size.insert(eframe::egui::TextStyle::Body, (FontFamily::Proportional, 20.));
-	// 	font_def.fonts_for_family.get_mut(&FontFamily::Proportional).unwrap().insert(0, "MesloLGS".to_string());
-	// 	ctx.set_fonts(font_def);
-	// }
 }
 
 struct NewsCardData{
@@ -58,6 +49,7 @@ struct NewsCardData{
 
 impl App for Headlines {
 	fn update(&mut self, ctx: &eframe::egui::CtxRef, frame: &eframe::epi::Frame) {
+		
 		CentralPanel::default().show(ctx, |ui| {
 			ui.horizontal(|ui| {
 
@@ -83,7 +75,9 @@ impl App for Headlines {
 
 				unsafe {
 					let csv_save_window = Window::new("Save to files")
-						.anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO);
+						.anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+						.min_height(1000.)
+						.resizable(true);
 
 					if save_to_file.clicked(){
 						//TODO: save current list to csv file
@@ -100,36 +94,47 @@ impl App for Headlines {
 											ui.add_sized((10., 5.), Label::new("Seperator"));
 											let mut csv_window_options = CSVWindow::CSVWindow();
 											ui.add_space(10.);
-											ui.add_sized((5., 5.), egui::TextEdit::singleline(&mut csv_window_options.seperator));
+											ui.add_sized((5., 5.), egui::TextEdit::singleline(&mut csv_window_options.seperator).code_editor());
+										});
+										ui.add_space(100.)
+									});
+
+									ui.vertical(|ui| {
+										ScrollArea::vertical()
+										.show(ui, |ui| {
+											ui.set_height(100.);
 											
+											ui.add(egui::TextEdit::multiline(&mut format_csv()));
 										});
 									});
-									ui.add_space(100.);
-									ui.vertical(|ui| {
-										let arti = Headlines::new();
-										for a in &arti.articles{
-											let cur_ip = a.ip.as_str();
-											let vip: Vec<&str>= cur_ip.split(":").collect();
-											let mut _vip: Vec<&str> = vip[1].split("\"").collect();
-											ui.add(egui::TextEdit::singleline(&mut _vip[1]));
-											
-										}
-									})
-								});
-								
+								});	
 							});
 
 							ui.add_space(20.);
 							ui.group(|ui| {
 								ui.horizontal(|ui| {
 									let c_btn = Button::new("Cancel");
+									let d_btn = Button::new("Fill with DbugData");
 									let s_btn = Button::new("Save");
 									if ui.add_enabled(true, c_btn).clicked() {
 										TOGGLE_SAVE_WINDOW = !TOGGLE_SAVE_WINDOW;
 									}
-									ui.add_space(230.);
+									ui.add_space(110.);
+									if ui.add_enabled(true, d_btn
+									).clicked() {
+										data_base::fill_with_dummy_data("table", 10).expect("Can't create Dummy Data");
+									}
+									ui.add_space(110.);
 									if ui.add_enabled(true, s_btn).clicked() {
+										
+										fs::create_dir_all("./csv").expect("Can't create folder");
+										let mut csv_file = fs::File::create("./csv/ips.csv").expect("Can't create file");
 
+										let format_csv = format_csv();
+
+										csv_file.write_all(format_csv.as_bytes()).expect("Can't write to csv file");
+
+										Command::new("explorer").arg(".\\csv\\").spawn().expect("Can't open explorer"); //üüü
 									}
 								});
 
@@ -167,7 +172,7 @@ impl App for Headlines {
 		_frame: &eframe::epi::Frame,
 		_storage: Option<&dyn eframe::epi::Storage>,
 	) {
-		//self.configure_fonts(ctx);
+		
 	}
 	fn on_exit(&mut self) {
 		unsafe {
@@ -192,6 +197,26 @@ fn sniffing_thread(){
 		}
 	}
 }
+
+fn format_csv() -> String {
+	let arti = Headlines::new();
+	let mut mtext:String = "ip, location".to_string();
+
+	for a in &arti.articles{
+	
+		let cur_ip = a.ip.as_str();
+		let vip: Vec<&str> = cur_ip.split(":").collect();
+		let mut _vip: Vec<&str> = vip[1].split("\"").collect();
+		mtext = format!("{}\n{}", mtext ,_vip[1]);
+
+		let cur_loc = a.location.as_str();
+		let vloc: Vec<&str> = cur_loc.split(":").collect();
+		let mut _vloc: Vec<&str> = vloc[1].split("\"").collect();
+		mtext = format!("{}, {}", mtext ,_vloc[1])
+	}
+	return mtext;
+}
+
 
 pub fn main() {
 
