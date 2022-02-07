@@ -1,11 +1,13 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, time::SystemTime};
 use rand::Rng;
 use rusqlite::{Connection, Result};
+use chrono::Local;
 
 #[derive(Debug)]
 struct GTAConnection {
     ip: String,
     location: String,
+    time: String,
 }
 
 fn format_connection(input:String) -> HashMap<String, String> {
@@ -35,8 +37,9 @@ pub fn read(tabel: &str) -> Result<HashMap<usize, HashMap<String, String>>> {
 
     let gta_connections = stmt.query_map([], |row| {
         Ok(GTAConnection {
-            ip: row.get(0)?,
-            location: row.get(1)?,
+            time: row.get(0)?,
+            ip: row.get(1)?,
+            location: row.get(2)?,
         })
     })?;
 
@@ -53,12 +56,12 @@ pub fn read(tabel: &str) -> Result<HashMap<usize, HashMap<String, String>>> {
     Ok(connection_map)
 }
 
-pub fn create_table(table: &str) -> Result<(), rusqlite::Error> {
+pub fn create_table() -> Result<(), rusqlite::Error> {
     let con = Connection::open("communicate.db")?;
 
-    let c_t = con.execute(format!("CREATE TABLE ips (ip text, location text)").as_str(),[]);  //TODO: Modular machen (Hashmap mit entires)
+    let _ = con.execute(format!("CREATE TABLE ips (time text,ip text, location text)").as_str(),[]);  //TODO: Modular machen (Hashmap mit entires)
 
-    let c = con.close();
+    let _ = con.close();
     Ok(())
 }
 
@@ -71,8 +74,8 @@ pub fn clear(table: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn fill_with_dummy_data(table: &str, number:i32) -> Result<(), rusqlite::Error> {
-    create_table("").unwrap();
+pub fn fill_with_dummy_data(number:i32) -> Result<(), rusqlite::Error> {
+    create_table().unwrap();
     let con = Connection::open("communicate.db")?;
     let mut rng = rand::thread_rng();
     for i in 0..number {
@@ -80,7 +83,10 @@ pub fn fill_with_dummy_data(table: &str, number:i32) -> Result<(), rusqlite::Err
         let ru1: u8 = rng.gen();
         let ru2: u8 = rng.gen();
         let ru3: u8 = rng.gen();
-        let _ = con.execute(format!("REPLACE INTO ips VALUES ('{ip}','{location}')", ip=format!("{}.{}.{}.{}", ru0,ru1,ru2,ru3), location="Area 51+Nevada+USA").as_str(),[]);
+
+        let date = Local::now();
+
+        let _ = con.execute(format!("REPLACE INTO ips VALUES ('{time}','{ip}','{location}')", time=date.format("%H-%M-%S"),ip=format!("{}.{}.{}.{}", ru0,ru1,ru2,ru3), location="Area*51+Nevada+USA").as_str(),[]);
     }
     
     let _ = con.close();

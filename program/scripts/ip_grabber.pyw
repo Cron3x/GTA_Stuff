@@ -3,7 +3,7 @@ from time import sleep
 from pathlib import Path
 from ip2geotools.databases.noncommercial import DbIpCity
 from json import load
-
+from datetime import datetime
 
 #>-------------------------------
 # Import Database communication
@@ -68,11 +68,14 @@ def main():
 				#[print("z: ", z)]
 
 				#print(z in x[0] for x in test_z)
-				if z in test_z:
+				if dst in test_z:
 					pass
 				else:
 					#print(f"{z}")
-					write_db(dst, get_location(dst).replace(" ", "_"))
+
+					now = datetime.now()
+					current_time = now.strftime("%H:%M:%S")
+					write_db(current_time, dst, get_location(dst).replace(" ", "_"))
 					test_z.append(dst)
 			except Exception as e:
 				pass

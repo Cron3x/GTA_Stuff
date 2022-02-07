@@ -1,9 +1,13 @@
 @echo off
 
+rm -r -Fo release\
+
 cd installer\
+cargo clean
 cargo build --release
 
 cd ..\program\
+cargo clean
 cargo build --release
 
 cd ..\

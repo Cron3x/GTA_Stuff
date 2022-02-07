@@ -2,7 +2,7 @@ from sqlite3 import connect
 #>-------------------------------<#
 # Functioms to comunicate with the database #
 #>-------------------------------<#
-def write_db(ip, location):
+def write_db(time,ip, location):
 	con = connect('communicate.db')
 	cur = con.cursor()
 	try:
@@ -10,7 +10,7 @@ def write_db(ip, location):
 				(ip text, location text)''')
 	except:
 		pass
-	cur.execute(f"REPLACE INTO ips VALUES ('{ip}','{location}')")
+	cur.execute(f"REPLACE INTO ips VALUES ('{time}','{ip}','{location}')")
 	con.commit()
 	con.close()
 def read_db(table) -> list:

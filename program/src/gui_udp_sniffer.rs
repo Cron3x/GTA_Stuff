@@ -9,12 +9,14 @@ static mut TOGGLE_SAVE_WINDOW:bool = false;
 
 pub struct CSVWindow {
     seperator: String,
+	headings: String,
 }
 
 impl CSVWindow {
     fn CSVWindow() -> Self {
         Self {
             seperator: ",".to_owned(),
+			headings: "time , ip, location".to_string()
         }
     }
 }
@@ -33,6 +35,7 @@ impl Headlines {
 			header: format!("-------------------------<{}>-------------------------", a+1),
 			ip: format!("IP: {}", data[&a]["ip"]),
 			location: format!("Location: {}", data[&a]["location"]),
+			time: format!("Time: {}", data[&a]["time"])
 		});
 		Headlines {
 			articles: Vec::from_iter(iter),
@@ -45,6 +48,7 @@ struct NewsCardData{
 	header: String,
 	ip: String,
 	location: String,
+	time: String,
 }
 
 impl App for Headlines {
@@ -80,7 +84,6 @@ impl App for Headlines {
 						.resizable(true);
 
 					if save_to_file.clicked(){
-						//TODO: save current list to csv file
 						TOGGLE_SAVE_WINDOW = !TOGGLE_SAVE_WINDOW;
 					}
 					
@@ -122,7 +125,7 @@ impl App for Headlines {
 									ui.add_space(110.);
 									if ui.add_enabled(true, d_btn
 									).clicked() {
-										data_base::fill_with_dummy_data("table", 10).expect("Can't create Dummy Data");
+										data_base::fill_with_dummy_data( 10).expect("Can't create Dummy Data");
 									}
 									ui.add_space(110.);
 									if ui.add_enabled(true, s_btn).clicked() {
@@ -152,11 +155,14 @@ impl App for Headlines {
 				let arti = Headlines::new();
 				for a in &arti.articles{
 					ui.label(&a.header);
-					ui.label(&a.ip);
+					ui.label(&a.time);
+					ui.label( &a.ip);
+
 					let beautyfied_location_a = format!("{}", a.location.replace("*", " "));
 					let beautyfied_location_b = format!("{}", beautyfied_location_a.replace("+", ", "));
 					ui.hyperlink_to(&beautyfied_location_b, format!("https://www.google.de/maps/search/{}", &beautyfied_location_b.replace("Location: ","")));
 					ui.label("");
+
 				}
 			});
 		});
@@ -200,19 +206,24 @@ fn sniffing_thread(){
 
 fn format_csv() -> String {
 	let arti = Headlines::new();
-	let mut mtext:String = "ip, location".to_string();
+	let mut mtext:String = CSVWindow::CSVWindow().headings;
 
 	for a in &arti.articles{
 	
-		let cur_ip = a.ip.as_str();
+		let cur_ip = a.time.as_str();
 		let vip: Vec<&str> = cur_ip.split(":").collect();
 		let mut _vip: Vec<&str> = vip[1].split("\"").collect();
 		mtext = format!("{}\n{}", mtext ,_vip[1]);
 
+		let cur_loc = a.ip.as_str();
+		let vloc: Vec<&str> = cur_loc.split(":").collect();
+		let mut _vloc: Vec<&str> = vloc[1].split("\"").collect();
+		mtext = format!("{}, {}", mtext ,_vloc[1]);
+
 		let cur_loc = a.location.as_str();
 		let vloc: Vec<&str> = cur_loc.split(":").collect();
 		let mut _vloc: Vec<&str> = vloc[1].split("\"").collect();
-		mtext = format!("{}, {}", mtext ,_vloc[1])
+		mtext = format!("{}, {}", mtext ,_vloc[1]);
 	}
 	return mtext;
 }
@@ -220,7 +231,7 @@ fn format_csv() -> String {
 
 pub fn main() {
 
-	data_base::create_table("ips").expect("could not create table");
+	data_base::create_table().expect("could not create table");
 
 	let app = Headlines::new();
 	let mut win_options = NativeOptions::default();
