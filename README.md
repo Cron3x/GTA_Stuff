@@ -2,7 +2,7 @@
 
 [![version](https://img.shields.io/badge/version-0.0.2-gree.svg)](https://semver.org)
 
-##### some times the downloadable releases are not up to date, so maby build it your self
+##### Some times the downloadable releases are not up to date, so maby build it your self
 
 ## Features
 
