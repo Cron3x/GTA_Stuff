@@ -2,10 +2,7 @@
 
 [![version](https://img.shields.io/badge/version-0.0.2-gree.svg)](https://semver.org)
 
-```diff
-! some times the downloadable build are not up to date, 
-! so maby build it your self
-```
+##### some times the downloadable build are not up to date, so maby build it your self
 
 ## Features
 
@@ -23,7 +20,7 @@
 ./build.bat
 ```
 
-The _exe_ file is in _build folder
+The _exe_ file is in `_build` folder
 
 #### Build your self with cargo
 
@@ -32,7 +29,7 @@ cd program/
 cargo build --release
 ```
 
-The _exe_ file is now located in program\target\release\gta_stuff.exe
+The _exe_ file is now located in `program\target\release\gta_stuff.exe`
 
 ### Disclamer
 
