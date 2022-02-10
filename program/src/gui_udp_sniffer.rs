@@ -24,7 +24,6 @@ impl CSVWindow {
 
 struct Headlines{
 	articles: Vec<NewsCardData>,
-	cont_btn_bool: bool,
 }
 
 impl Headlines {
@@ -39,7 +38,6 @@ impl Headlines {
 		});
 		Headlines {
 			articles: Vec::from_iter(iter),
-			cont_btn_bool: false,
 		}
 	}
 }
@@ -140,15 +138,10 @@ impl App for Headlines {
 										Command::new("explorer").arg(".\\csv\\").spawn().expect("Can't open explorer"); //üüü
 									}
 								});
-
-								
-								// ui.available_height();
-								// ui.available_width();
 							});
 						});
 					}
 				}
-					
 			});
 			ScrollArea::vertical().show(ui, |ui|{
 				ui.add_sized((540.0, 0.0), Label::new(""));
